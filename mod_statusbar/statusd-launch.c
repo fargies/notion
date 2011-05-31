@@ -8,9 +8,12 @@
  
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 #include <unistd.h>
 #include <time.h>
 #include <errno.h>
+#include <string.h>
 
 #include <libtu/minmax.h>
 #include <libextl/readconfig.h>
@@ -174,6 +177,32 @@ err2:
 err:    
     close(outfd);
     close(errfd);
+    return -1;
+}
+
+EXTL_EXPORT
+int mod_statusbar__create_socket(ExtlFn datahandler)
+{
+    struct sockaddr_un addr;
+    int sock = socket(AF_UNIX, SOCK_DGRAM, 0);
+
+    if (sock < 0)
+        return sock;
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strcpy(addr.sun_path + 1, "notion_statusd");
+
+    if (bind(sock, (const struct sockaddr *) &addr, sizeof(addr)) != 0)
+        goto sock_err;
+
+    if (!mainloop_register_input_fd_extlfn(sock, datahandler))
+        goto sock_err;
+
+    return sock;
+
+sock_err:
+    close(sock);
     return -1;
 }
 

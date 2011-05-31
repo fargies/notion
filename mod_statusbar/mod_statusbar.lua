@@ -158,6 +158,7 @@ end
 -- ion-statusd support {{{
 
 local statusd_pid=0
+local sock_fd=-1
 
 function mod_statusbar.rcv_statusd(str)
     local data=""
@@ -289,6 +290,20 @@ function mod_statusbar.launch_statusd(cfg)
     end                                              
 end
 
+function mod_statusbar.create_socket()
+    if sock_fd > 0 then
+        return
+    end
+
+    local rcv = coroutine.wrap(mod_statusbar.rcv_statusd)
+
+    sock_fd = mod_statusbar._create_socket(rcv)
+
+    if sock_fd<0 then
+        warn(TR("Failed to create mod_statusbar socket."))
+    end
+end
+
 --}}}
 
 
@@ -356,4 +371,5 @@ dopath('cfg_statusbar', true)
 -- Launch statusd if the user didn't launch it.
 if not mod_statusbar.no_autolaunch then
     mod_statusbar.launch_statusd()
+    mod_statusbar.create_socket()
 end
