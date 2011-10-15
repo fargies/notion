@@ -14,6 +14,7 @@
 #include <time.h>
 #include <errno.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include <libtu/minmax.h>
 #include <libextl/readconfig.h>
@@ -185,9 +186,16 @@ int mod_statusbar__create_socket(ExtlFn datahandler)
 {
     struct sockaddr_un addr;
     int sock = socket(AF_UNIX, SOCK_DGRAM, 0);
+    int opt = 1;
 
     if (sock < 0)
         return sock;
+
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof (int)) != 0)
+        goto sock_err;
+
+    if (fcntl(sock, F_SETFD, FD_CLOEXEC) != 0)
+        goto sock_err;
 
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
