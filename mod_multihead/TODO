@@ -1,0 +1,4 @@
+.TODO list
+* Handle screen rotations.
+* Add some Lua methods to enabled/disable xinerama mode.
+
