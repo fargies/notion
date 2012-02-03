@@ -4,6 +4,7 @@
 
 MODULE_LIST = mod_tiling mod_query mod_menu \
 	      mod_dock mod_sp mod_sm mod_statusbar \
+	      mod_multihead \
 	      de
 
 # Modules to -dlpreload into pwm if statically linking.
